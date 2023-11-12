@@ -1,0 +1,10 @@
+# Usa la misma base que tu aplicación
+FROM maven:3.8.5-openjdk-17 AS build
+
+WORKDIR /app
+
+# Copia el proyecto completo al contenedor
+COPY . /app
+
+# Comando para ejecutar las pruebas
+CMD ["mvn", "test"]

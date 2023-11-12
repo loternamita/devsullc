@@ -1,0 +1,66 @@
+version: '3'
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5673:5672"
+      - "15673:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASSWORD=guest
+    networks:
+      - mynetwork
+  db:
+    image: postgres
+    container_name: db
+    environment:
+      - POSTGRES_DB=devsullc
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=danny-001
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - mynetwork
+  cliente:
+    build: ./devsullc
+    ports:
+      - "8087:8087"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/devsullc
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=danny-001
+    depends_on:
+      - db
+      - rabbitmq
+      - cuenta
+    networks:
+      - mynetwork
+  cuenta:
+    build: ./devsullc-2
+    ports:
+      - "8086:8086"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/devsullc
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=danny-001
+    depends_on:
+      - db
+      - rabbitmq
+    networks:
+      - mynetwork
+  test:
+    build:
+      context: ./devsullc
+      dockerfile: Dockerfile.test
+    depends_on:
+      - cliente
+    networks:
+      - mynetwork
+volumes:
+  postgres_data:
+  rabbitmq_data:
+networks:
+  mynetwork:
